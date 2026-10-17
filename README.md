@@ -1,48 +1,75 @@
-# Agentic POS · Ventas e inventario
+# InzaiQ POS Starter
 
-Caja con cobro en efectivo, ticket, ventas e inventario para múltiples empresas. Template en **Next.js + TypeScript** para que un agente ensamble instalaciones de clientes y sus administradores operen desde la interfaz o desde **MCP con OAuth**.
+**An agent-ready foundation for sales, inventory and multi-tenant retail.**
 
-> Cliente pide el sistema → agente configura y ensambla módulos → cliente autoriza su agente para administrar su negocio.
+Build a branded point of sale in Next.js, then let business owners manage it through the interface or an authorized MCP agent. Modular services, explicit contracts and shared business rules keep each installation straightforward to extend.
 
-## Últimos cambios · v0.1.0
+[English](README.md) · [Español](README.es.md)
 
-Base funcional: catálogo e inventario persistentes, pedidos transaccionales, aislamiento multitenant, roles, MCP/OAuth, adaptadores PostgreSQL/libSQL, configuración operativa en caliente, contenedores y despliegues graduales con pruebas y telemetría. Consultá [CHANGELOG.md](CHANGELOG.md) y [verificación](docs/verification.md).
+[![CI](https://github.com/JuanCG13/inzaiq-pos-starter/actions/workflows/ci.yml/badge.svg)](https://github.com/JuanCG13/inzaiq-pos-starter/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Next.js 16](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)](package.json)
+[![TypeScript 7](https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript&logoColor=white)](package.json)
 
-## Probar en local
+[Quickstart](#quickstart) · [Features](#overview) · [MCP](#connect-an-agent) · [Documentation](docs/README.md) · [Latest changes](CHANGELOG.md)
 
-Requiere Node.js 22+; CI usa Node 24.
+![Nexo POS demo showing the product catalog and cash checkout](docs/screenshots/point-of-sale.png)
+
+*Screenshots show the customizable **Nexo POS** reference interface in Spanish. Adapt its brand, currency, locale and application copy for each customer.*
+
+## Overview
+
+| Capability | Included |
+| --- | --- |
+| **Cash checkout** | Product search, SKU entry, keyboard barcode input, stock-aware cart, cash received, change and printable receipt |
+| **Catalog & inventory** | Product creation/editing, categories, version checks and audited stock adjustments |
+| **Sales & reporting** | Persisted sales history and dashboard totals from the database, separated by currency |
+| **Multiple businesses** | Better Auth organizations with verified membership and owner, admin, cashier and viewer roles |
+| **Agent administration** | Official MCP SDK, Streamable HTTP, OAuth/PKCE, scoped tools and revocable consent |
+| **Live operational settings** | Tenant notices and pause/resume for new sales, with version checks and audit |
+| **Diagnostics** | Structured logs, request correlation, transactional audit and optional OpenTelemetry export |
+
+**Stack:** Next.js App Router · React · TypeScript · Better Auth · Kysely · Radix · Lucide. Database adapters support **Supabase, Neon, PostgreSQL and Turso**, with local SQLite for development.
+
+The interface, HTTP routes and MCP tools use the same domain service. Tenant access comes from verified membership; amounts use integer minor units and server-side prices. Sales, stock and audit commit together, with persistent idempotency to prevent duplicate operations. Agents receive named business tools, never arbitrary SQL access.
+
+### A closer look
+
+| Inventory | Sales history |
+| --- | --- |
+| ![Inventory management in the Nexo POS demo](docs/screenshots/inventory.png) | ![Sales history in the Nexo POS demo](docs/screenshots/sales.png) |
+
+<details>
+<summary>Mobile point of sale</summary>
+
+<img src="docs/screenshots/pos-mobile.png" alt="Nexo POS cash checkout on a mobile screen" width="280" />
+
+</details>
+
+## Quickstart
+
+Requires **Node.js 22+**. CI uses Node.js 24.
 
 ```bash
-git clone https://github.com/JuanCG13/AGENTIC-POS-VENTAS-SYSTEM.git
-cd AGENTIC-POS-VENTAS-SYSTEM
+git clone https://github.com/JuanCG13/inzaiq-pos-starter.git
+cd inzaiq-pos-starter
 npm ci
 npm run demo
 ```
 
-Abrí **http://localhost:3001**. El script crea una base `demo.db` aislada y un `.env.local` ignorado por git con un secreto nuevo. No sobrescribe configuración de un cliente. El acceso demo funciona solamente en desarrollo y loopback; producción lo rechaza. **MCP siempre requiere inicio de sesión y consentimiento reales**, incluso en demo.
+Open **[localhost:3001](http://localhost:3001)**. The demo creates an isolated `demo.db` and a git-ignored `.env.local` with a fresh secret; it does not overwrite an existing customer configuration. Demo access is restricted to local development and rejected in production. MCP always requires real sign-in and OAuth consent.
 
-## Qué incluye
+## Configure a customer installation
 
-| Capacidad | Implementación |
-|---|---|
-| Interfaz | Next App Router, React, Radix, Lucide; adaptable y con navegación por teclado |
-| Empresas y usuarios | Better Auth Organizations; roles owner, admin, cashier y viewer |
-| Catálogo | SKU, categoría, precio, moneda, imagen, estado y edición con versión |
-| Inventario | Ajustes auditados, stock no negativo y control de concurrencia |
-| Pedidos / ventas | Precios del servidor, total/moneda aprobados, transacción y claves idempotentes |
-| Agentes | SDK MCP oficial, Streamable HTTP, OAuth/PKCE, scopes y revocación |
-| Datos | Supabase/Neon/PostgreSQL mediante `pg`; Turso/libSQL y SQLite local |
-| Diagnóstico | JSON estructurado, correlación por solicitud, OpenTelemetry opcional y auditoría |
-| Ensamblaje | Configuración de marca, manifiesto de módulos, scripts, AGENTS y CI |
-| Cambios en producción | Ajustes operativos sin recompilar; Docker, readiness, rolling update y rollback documentados |
-
-## Adaptar para un cliente
+Use a separate checkout from the demo, then set the brand and monetary formatting:
 
 ```bash
-npm run configure -- --name "Mi negocio" --currency PYG --locale es-PY
+npm ci
+npm run configure -- --name "My store" --currency USD --locale en-US
+cp .env.example .env.local
 ```
 
-En un checkout sin demo, copiá `.env.example` a `.env.local`. Configurá `DATABASE_PROVIDER`, `DATABASE_URL`, secreto de autenticación y URL pública HTTPS. Después:
+Configure the database, canonical application URL and authentication secret in `.env.local`, with `DEMO_MODE=false`. Follow the [assembly guide](docs/assembly.md) and [database guide](docs/database.md), then run:
 
 ```bash
 npm run db:migrate
@@ -50,67 +77,58 @@ npm run auth:migrate
 npm run dev
 ```
 
-Creá la cuenta en `/sign-in` y la empresa en `/onboarding`. Para una tienda pública, configurá `STORE_TENANT_ID` con el ID de esa empresa. `/onboarding/connections` muestra el negocio conectado y permite revocar permisos de agentes.
+Create the owner account at `/sign-in` and the business at `/onboarding`. Organization switching checks the user's membership. Each size/color variation can be represented by a separate SKU.
 
-El agente modifica **`src/template.config.ts`** y usa **`template.manifest.json`** para conocer módulos y dependencias. Cambiar moneda de marca no convierte precios existentes. Cada variante talla/color puede ser un SKU independiente en esta versión.
+| Assembly entry point | Purpose |
+| --- | --- |
+| [`src/template.config.ts`](src/template.config.ts) | Brand, locale, currency and module switches |
+| [`template.manifest.json`](template.manifest.json) | Module contracts, dependencies and extension navigation |
+| [`AGENTS.md`](AGENTS.md) | Rules for agents modifying an installation |
 
-## Cambios por agentes y operación en caliente
+Changing the configured currency does not convert existing prices. The manifest describes modules; adding an entry does not implement a feature. Follow the [extension recipe](docs/extending.md) for new capabilities.
 
-El agente empieza por `AGENTS.md` y [el flujo de modificación](docs/agent-workflow.md). Los módulos exponen contratos y pruebas; las migraciones son incrementales. Los administradores pueden cambiar un aviso o pausar nuevas operaciones desde Ajustes o las herramientas MCP `settings_get` y `settings_update`. La validación del servidor se aplica a las nuevas ventas; no cancela pedidos ya aceptados.
+## Connect an agent
 
-Para cambiar código, [la guía de producción](docs/production.md) incluye imágenes inmutables, despliegue gradual, comprobación de esquema y rollback. Hay manifiestos Kubernetes y Dockerfile; no se ha desplegado ni certificado continuidad sobre infraestructura real. [Configuración operativa](docs/runtime-settings.md).
+Deploy the application on HTTPS and add **`https://your-domain/api/mcp`** to a compatible ChatGPT, Claude or other MCP client. The owner signs in, selects a business and grants the required scopes. Connection availability depends on the client's account and workspace settings.
 
-Para crecer, [la guía de escala](docs/scaling.md) documenta réplicas, presupuesto de conexiones, límites actuales de consultas y cuándo añadir búsqueda especializada, agregados o trabajos en segundo plano. No se atribuye una capacidad de tráfico sin medirla en la instalación real.
+Tools cover products, stock, sales, dashboard, audit and operational settings. Writes require explicit confirmation plus server-side role and scope checks. Review or revoke connections at `/onboarding/connections`.
 
-Para nuevas funciones, [la guía de extensión](docs/extending.md) da una receta por módulo y el mapa de contratos, permisos, migraciones, API/MCP, interfaz y pruebas. `template.manifest.json` funciona como índice para agentes; no carga plugins automáticamente.
+The application does not need an OpenAI or Anthropic API key. Local OAuth/MCP tests are included; a live connection to the customer's account must be verified during setup. See the [MCP guide](docs/mcp.md).
 
-[Preparación enterprise](docs/enterprise.md) incluye el overlay de autoescalado y un escenario reproducible de carga. Miles o millones de usuarios simultáneos son un objetivo de arquitectura que requiere infraestructura, partición, capacidad y evidencia de pruebas; no una capacidad demostrada por este template.
+## Verification
 
-[Modelos de negocio](docs/business-models.md) define contratos para entregas físicas, derechos de acceso digital y suscripciones SaaS. Estos perfiles son puntos de extensión; logística, entrega digital y billing recurrente no quedan activados por seleccionar un perfil.
-
-
-
-## Conectar ChatGPT o Claude
-
-Desplegá el sistema por HTTPS y añadí **`https://tu-dominio/api/mcp`** como conexión MCP personalizada en el cliente compatible. El propietario inicia sesión, selecciona su empresa y concede permisos. Las escrituras requieren confirmación explícita y controles del servidor.
-
-No se solicitan claves de API de OpenAI/Anthropic para administrar el negocio. La disponibilidad del conector depende de la cuenta y configuración del cliente. [Guía MCP y herramientas](docs/mcp.md).
-
-## Verificación
+The [recorded local verification](docs/verification.md) includes **128 passing automated tests**, **3 passing browser journeys**, a production build and a standalone startup smoke check. This is local evidence, not a cloud capacity benchmark; the CI badge links to the actual GitHub workflow.
 
 ```bash
 npm run doctor
-npm run typecheck
-npm test
-npm run build
-```
-
-Si tenés `.env.local` de demo, desactivá `DEMO_MODE` para compilar producción; no publiques la base ni ese archivo. `npm run verify` agrupa tipos, pruebas y build. Las pruebas usan libSQL real y PostgreSQL WASM; las credenciales cloud se verifican por separado en cada instalación.
-
-Para probar los recorridos completos de navegador en un checkout de demo:
-
-```bash
+DEMO_MODE=false npm run verify
 npx playwright install chromium
 npm run test:e2e
 ```
 
-Playwright inicia su servidor, crea datos de prueba y verifica escritorio y móvil. Usá un checkout aislado: estos recorridos modifican la base demo.
+`verify` runs type checks, tests and the production build. Browser tests use and modify an isolated demo database. Domain tests exercise real libSQL and PostgreSQL WASM; managed-provider connections and external account integrations require installation-specific validation.
 
-## Alcance de esta versión
+## Production and scale
 
-La caja registra ventas en efectivo y genera un comprobante imprimible; no es una factura fiscal. No se procesan tarjetas. No se incluyen todavía facturación tributaria, devoluciones, envíos, compras a proveedores, stock fraccionario, sucursales ni sincronización offline. Las reservas de pedidos pendientes no vencen automáticamente.
+Docker standalone builds, Kubernetes rolling-update manifests, schema-aware readiness, an HPA template, a connection-budget checker and read-only k6 journeys are provided. Tenant notices and sale admission can change at runtime; code changes use immutable releases and compatible migrations.
 
-La base está preparada para desplegarse, pero **no está certificada como un sistema productivo terminado**. Antes de aceptar operaciones reales: conexión cloud, HTTPS, backup/restauración, controles de tráfico público y pruebas con la cuenta MCP del cliente. No se ha afirmado una conexión real a cuentas ChatGPT/Claude ni a bases cloud durante la construcción.
+| Task | Guide |
+| --- | --- |
+| Release, migrate and roll back | [Production runbook](docs/production.md) |
+| Modify safely with an agent | [Agent workflow](docs/agent-workflow.md) |
+| Understand query and data limits | [Scaling](docs/scaling.md) |
+| Plan capacity and infrastructure | [Enterprise preparation](docs/enterprise.md) · [HPA](deploy/enterprise/README.md) · [Load tests](tests/load/README.md) |
 
-## Documentación
+Live provider connectivity, backup restoration, rollout behavior and load capacity must be validated in the chosen infrastructure. No throughput, million-user capacity or uninterrupted deployment guarantee is claimed.
 
-- [Ensamblaje paso a paso](docs/assembly.md)
-- [Arquitectura y decisiones](docs/architecture.md)
-- [Bases de datos e invariantes](docs/database.md)
-- [OAuth y MCP](docs/mcp.md)
-- [Telemetría y operación](docs/telemetry.md)
-- [Resultados de verificación](docs/verification.md)
-- [Producción, actualizaciones y rollback](docs/production.md)
-- [Flujo de cambios para agentes](docs/agent-workflow.md)
+**Current scope:** cash sales and internal printable receipts. Card processing, fiscal invoices, returns, fractional stock, multi-warehouse operations and offline synchronization require additional modules. The receipt is not a fiscal invoice.
 
-Licencia MIT. Las dependencias y fotos de muestra conservan sus respectivas licencias.
+## Documentation
+
+The top-level READMEs are available in English and Spanish. Technical guides currently use both languages; the [documentation index](docs/README.md) identifies the language of each guide.
+
+[Architecture](docs/architecture.md) · [Assembly](docs/assembly.md) · [Database](docs/database.md) · [MCP](docs/mcp.md) · [Telemetry](docs/telemetry.md) · [Runtime settings](docs/runtime-settings.md) · [Extension contracts](docs/business-models.md)
+
+## License
+
+[MIT](LICENSE). Dependencies and sample images retain their respective licenses. Replace demo imagery with assets licensed for the customer installation.
