@@ -1,0 +1,3 @@
+"use client";
+import { AlertCircle, RefreshCw } from "lucide-react";
+export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) { return <div className="empty-state page-error" role="alert"><div className="empty-icon"><AlertCircle size={30} /></div><h1>No pudimos mostrar esta pantalla</h1><p>Tus operaciones guardadas siguen en el sistema. Intentá cargar la vista nuevamente.</p>{error.digest ? <code>Referencia: {error.digest}</code> : null}<button className="button button-primary" onClick={reset}><RefreshCw size={16} />Volver a intentar</button></div>; }

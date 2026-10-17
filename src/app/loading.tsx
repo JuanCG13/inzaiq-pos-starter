@@ -1,0 +1,1 @@
+export default function Loading() { return <div className="page-loading" role="status" aria-label="Cargando página"><div className="skeleton skeleton-title" /><div className="skeleton-grid">{[1, 2, 3, 4, 5, 6].map((id) => <div key={id} className="skeleton" />)}</div><span className="sr-only">Cargando…</span></div>; }
