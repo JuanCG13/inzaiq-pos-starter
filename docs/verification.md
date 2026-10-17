@@ -7,12 +7,22 @@ Fecha: 2026-10-17. Esta evidencia corresponde al código de esta entrega y a pru
 | Comprobación | Resultado |
 |---|---|
 | TypeScript y tipos de rutas Next | PASS |
-| Vitest: dominio, seguridad, autenticación, MCP y telemetría | 128/128 PASS, 14 archivos |
-| Compilación Next.js de producción | PASS con DEMO_MODE=false y salida standalone |
-| Arranque standalone de producción | PASS: página, health, readiness, catálogo y rechazo de acceso admin sin sesión |
-| Diagnóstico de configuración y tablas locales | PASS, 9 comprobaciones |
-| npm audit, dependencias de producción | 0 vulnerabilidades reportadas en esta ejecución |
-| Navegador | 3/3 PASS: 2 recorridos escritorio/móvil y 1 recorrido final de configuración en caliente |
+| Vitest: dominio, seguridad, autenticación, MCP, telemetría, idiomas y moneda | 152/152 PASS, 15 archivos (128 de 0.1.0 + 24 de localización) |
+| Compilación Next.js de producción | PASS con DEMO_MODE=false y salida standalone (repetida tras añadir idiomas y moneda) |
+| Arranque standalone de producción | PASS en 0.1.0 (página, health, readiness, catálogo y rechazo de acceso admin sin sesión); **no se repitió** para el cambio de localización |
+| Diagnóstico de configuración y tablas locales | PASS, 10 comprobaciones (incluye `localization.config`) |
+| npm audit, dependencias de producción | 0 vulnerabilidades reportadas en 0.1.0; las dependencias no cambiaron en el cambio de localización (no se repitió) |
+| Navegador | 7/7 PASS: 2 recorridos escritorio/móvil y 1 de configuración en caliente (ahora en inglés/USD) más 4 de idioma y moneda |
+| Capturas de documentación | PASS: `npm run docs:screenshots` genera 22 pantallas sin errores de consola ni desbordes horizontales |
+
+### Localización, moneda y capturas
+
+Fecha: 2026-10-17. Los recorridos de navegador se ejecutaron con Chromium 141 del contenedor mediante `PLAYWRIGHT_EXECUTABLE_PATH`, porque Playwright 1.64.1 esperaba otra compilación del navegador (el CI instala la suya con `npx playwright install`). Se partió de un `demo.db` nuevo.
+
+- Pruebas unitarias: paridad de claves y marcadores entre idiomas, plurales por idioma, cadena de reserva, negociación de `Accept-Language` y cookie con entradas hostiles, formato y lectura de importes por moneda, validación de la configuración, comportamiento del script `configure` (éxito y rechazos sin modificar el archivo) y traducción de cada código de error y scope alcanzables.
+- Navegador: inglés/USD por defecto, cambio a español sin recargar datos ni perder lo escrito, persistencia por cookie, primera visita según el idioma del navegador, cookie manipulada, inicio de sesión y 404 localizados y selector de moneda.
+- La captura de pantallas usa una instancia no demo con base SQLite nueva, registro y organización reales de Better Auth, catálogo cargado por la API, ventas por la interfaz y un flujo OAuth real hasta el consentimiento. Falla ante errores de consola o desbordes; en su primera ejecución detectó una expresión regular inválida en el onboarding y un desajuste de hidratación en la página de conexiones, ambos corregidos.
+- Límites: el cliente OAuth de las capturas es un ejemplo local, no evidencia de una conexión con ChatGPT o Claude. No se verificó soporte de idiomas de derecha a izquierda. Los textos de los diccionarios los redactó el equipo del template; una instalación debe revisarlos con hablantes nativos.
 
 ### Integridad y aislamiento
 

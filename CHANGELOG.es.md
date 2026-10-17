@@ -4,6 +4,31 @@
 
 ## Sin publicar como versión
 
+### Añadido
+
+- Internacionalización: interfaz en inglés (predeterminado) y español con diccionarios tipados en `src/i18n`, selector de idioma por persona (cookie, luego `Accept-Language` y por último el predeterminado de la instalación), formato de plurales, números y fechas por idioma y un camino documentado para añadir más idiomas ([guía](docs/i18n.md), en inglés).
+- `npm run configure` gestiona idiomas (`--locales`, `--default-locale`) y la lista de monedas del formulario de productos (`--currencies`) con validación; `npm run doctor` comprueba la configuración de localización.
+- `npm run docs:screenshots` captura todas las pantallas (22) desde una instancia real y aislada, y regenera la galería, las miniaturas y las cuadrículas de los README.
+- Catálogo de ejemplo en inglés y español con precios según la moneda (`src/db/demo-catalog.ts`, `DEMO_LOCALE` opcional).
+
+### Cambios
+
+- **Valores por defecto:** la moneda predeterminada ahora es USD y el idioma y formato predeterminados son inglés (`en-US`); antes eran PYG y español (`es-PY`). Los precios existentes no se convierten. Para recuperar los valores anteriores: `npm run configure -- --default-locale es --locale es-PY --currency PYG`.
+- Los mensajes de API, MCP y ajustes operativos ahora están en inglés canónico y conservan códigos de error estables; la interfaz traduce por código. Las integraciones que comparaban textos en español deben usar `error.code`.
+- Las capturas del repositorio están en inglés y cubren todas las pantallas; se reemplazaron las cuatro imágenes anteriores en español/PYG.
+- El catálogo de ejemplo del punto de venta ahora son diez productos en inglés, en USD y sin imágenes remotas.
+- Las etiquetas de los scopes del consentimiento pasaron del formulario a los diccionarios.
+
+### Correcciones
+
+- El `pattern` del identificador de la empresa en el onboarding era una expresión regular inválida en los navegadores actuales (error de consola y validación omitida).
+- La página de agentes conectados ya no provoca un desajuste de hidratación.
+- La marca "opcional" del campo de imagen del producto ya no pasa a una línea propia.
+
+### Pruebas
+
+- 24 pruebas unitarias nuevas (paridad de diccionarios y marcadores, plurales, negociación de idioma con entradas hostiles, formato y lectura de importes, validación de configuración, script `configure`, traducción de errores, catálogo de ejemplo) y 4 recorridos de navegador nuevos (cambio de idioma sin recargar datos, primera visita según el navegador, cookie manipulada, inicio de sesión y 404 localizados, selector de moneda); los recorridos existentes ahora corren en inglés/USD.
+
 ### Documentación
 
 - Nueva identidad InzaiQ Starter y comandos de clonado actualizados al nombre del repositorio.

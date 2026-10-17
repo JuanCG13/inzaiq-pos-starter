@@ -15,4 +15,4 @@ const {getAuth}=await import('../src/lib/auth');
 const {getMigrations}=await import('better-auth/db/migration');
 const {seedDemo}=await import('../src/db/seed');
 const db=getDatabase();
-try {await migrateDatabase(db);await(await getMigrations(getAuth().options)).runMigrations();await seedDemo(db,{userId:'demo-owner',tenantId:'demo-store',role:'owner'},templateConfig.kind);console.info(`Local demo ready. Run npm run dev -- --port ${port}. MCP still requires a real OAuth login/consent.`);}finally{await db.destroy();}
+try {await migrateDatabase(db);await(await getMigrations(getAuth().options)).runMigrations();await seedDemo(db,{userId:'demo-owner',tenantId:'demo-store',role:'owner'},templateConfig.kind,{locale:process.env.DEMO_LOCALE??templateConfig.i18n.defaultLocale,currency:templateConfig.currency});console.info(`Local demo ready. Run npm run dev -- --port ${port}. MCP still requires a real OAuth login/consent.`);}finally{await db.destroy();}
