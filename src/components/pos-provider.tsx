@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { api, ApiError } from "@/lib/api-client";
+import { api, describeError } from "@/lib/api-client";
+import { useI18n } from "@/i18n/provider";
 import type { Dashboard, Order, Product, Role } from "@/core/contracts";
 import { templateConfig } from "@/template.config";
 
@@ -15,17 +16,19 @@ interface PosContextValue {
   loadMoreProducts: () => Promise<void>; loadMoreOrders: () => Promise<void>;
 }
 const PosContext = createContext<PosContextValue | null>(null);
-export function errorMessage(error: unknown) { const message = error instanceof Error ? error.message : "No pudimos completar la operación. Volvé a intentarlo."; return error instanceof ApiError && error.requestId ? `${message} Referencia: ${error.requestId}` : message; }
 
 export function PosProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { t } = useI18n();
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [session, setSession] = useState<SessionInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [failure, setFailure] = useState<unknown>(null);
+  // Kept as the raw failure so the text follows the language if the user switches while an error is showing.
+  const error = useMemo(() => failure ? describeError(failure, t) : null, [failure, t]);
   const [notice, setNotice] = useState<string | null>(null);
   const [productsHasMore, setProductsHasMore] = useState(false);
   const [ordersHasMore, setOrdersHasMore] = useState(false);
@@ -44,8 +47,8 @@ export function PosProvider({ children }: { children: ReactNode }) {
       setSession(sessionData); setProducts(productData.products); setOrders(orderData.orders);
       setProductsHasMore(productData.products.length === 100); setOrdersHasMore(orderData.orders.length === 100);
       setDashboard("dashboard" in dashboardData ? dashboardData.dashboard : dashboardData);
-      setError(null);
-    } catch (failure) { setError(errorMessage(failure)); }
+      setFailure(null);
+    } catch (problem) { setFailure(problem); }
     finally { setLoading(false); setRefreshing(false); }
   }, []);
 
@@ -56,7 +59,7 @@ export function PosProvider({ children }: { children: ReactNode }) {
       const result = await api<{ products: Product[] }>(`/api/admin/products?limit=100&offset=${products.length}`);
       setProducts((current) => [...new Map([...current, ...result.products].map((product) => [product.id, product])).values()]);
       setProductsHasMore(result.products.length === 100);
-    } catch (failure) { setError(errorMessage(failure)); }
+    } catch (problem) { setFailure(problem); }
     finally { setLoadingMore(false); }
   }, [loadingMore, products.length]);
   const loadMoreOrders = useCallback(async () => {
@@ -66,7 +69,7 @@ export function PosProvider({ children }: { children: ReactNode }) {
       const result = await api<{ orders: Order[] }>(`/api/admin/orders?limit=100&offset=${orders.length}`);
       setOrders((current) => [...new Map([...current, ...result.orders].map((order) => [order.id, order])).values()]);
       setOrdersHasMore(result.orders.length === 100);
-    } catch (failure) { setError(errorMessage(failure)); }
+    } catch (problem) { setFailure(problem); }
     finally { setLoadingMore(false); }
   }, [loadingMore, orders.length]);
 

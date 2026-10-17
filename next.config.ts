@@ -13,6 +13,8 @@ const config: NextConfig = {
   deploymentId: process.env.DEPLOYMENT_VERSION,
   assetPrefix,
   poweredByHeader: false,
+  // Only the documentation screenshot server (scripts/capture-server.mjs) hides the development overlay.
+  ...(process.env.NEXT_DEV_INDICATORS === 'false' ? { devIndicators: false as const } : {}),
   serverExternalPackages: ['@libsql/client', '@libsql/kysely-libsql', 'pg', 'pino'],
   experimental: { cpus: 2 },
   async headers() {

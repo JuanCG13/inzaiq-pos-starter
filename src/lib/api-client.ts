@@ -1,6 +1,18 @@
 'use client';
+import type { MessageKey, Translator } from '@/i18n/types';
+
+/** `code` is the server's stable error code (for example ORDERS_PAUSED); the UI translates it, API clients read `message`. */
 export class ApiError extends Error {
-  constructor(message: string, public status: number, public requestId?: string) { super(message); this.name='ApiError'; }
+  constructor(message: string, public status: number, public requestId?: string, public code?: string) { super(message); this.name='ApiError'; }
+}
+/** Turns any failure into text in the active language. Unknown server codes fall back to the server's English message. */
+export function describeError(error: unknown, t: Translator): string {
+  let message = t('errors.generic');
+  if (error instanceof ApiError) {
+    const translated = error.code ? t(`errors.${error.code}` as MessageKey) : '';
+    message = translated && translated !== `errors.${error.code}` ? translated : error.message;
+  } else if (error instanceof Error && error.message) message = error.message;
+  return error instanceof ApiError && error.requestId ? `${message} ${t('errors.reference', { id: error.requestId })}` : message;
 }
 export async function api<T>(path:string, init:RequestInit = {}):Promise<T> {
   const requestId = crypto.randomUUID();
@@ -11,11 +23,11 @@ export async function api<T>(path:string, init:RequestInit = {}):Promise<T> {
   try {
     const response=await fetch(path,{...init,headers,credentials:'same-origin',cache:'no-store'});status=response.status;
     const payload=await response.json();
-    if(!response.ok) throw new ApiError(payload.error?.message ?? 'No se pudo completar la operación.',status,payload.requestId ?? requestId);
+    if(!response.ok) throw new ApiError(payload.error?.message ?? 'The operation could not be completed.',status,payload.requestId ?? requestId,payload.error?.code ?? 'UNKNOWN_ERROR');
     return payload.data as T;
   } catch(error) {
     if(error instanceof ApiError) throw error;
-    throw new ApiError('No pudimos conectar. Revisá tu conexión y volvé a intentar.',status,requestId);
+    throw new ApiError('Could not connect. Check your connection and try again.',status,requestId,'NETWORK_ERROR');
   } finally {
     // Safe correlation fallback. Never logs form values, customer data or bodies.
     const route=path.replace(/\/[0-9a-f-]{36}(?=\/|$|\?)/g,'/:id').split('?')[0];

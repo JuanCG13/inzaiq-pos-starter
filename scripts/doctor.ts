@@ -3,6 +3,7 @@ import { sql } from 'kysely';
 import { getSchema } from 'better-auth/db';
 import { templateConfig } from '../src/template.config';
 import { assertSchemaReady } from '../src/lib/readiness';
+import { validateLocalization } from '../src/i18n/config';
 nextEnv.loadEnvConfig(process.cwd());
 const checks: { check: string; ok: boolean }[] = [];
 async function check(name: string, fn: () => unknown | Promise<unknown>) {
@@ -13,6 +14,7 @@ const provider = process.env.DATABASE_PROVIDER ?? 'sqlite';
 checks.push({ check: 'database.provider', ok: ['postgres','supabase','neon','turso','sqlite'].includes(provider) });
 checks.push({ check: 'auth.secret.length', ok: (process.env.BETTER_AUTH_SECRET?.length ?? 0) >= 32 });
 checks.push({ check: 'modules.dependencies', ok: !templateConfig.modules.orders || (templateConfig.modules.catalog && templateConfig.modules.inventory) });
+checks.push({ check: 'localization.config', ok: validateLocalization(templateConfig).length === 0 });
 checks.push({ check: 'production.demo.disabled', ok: process.env.NODE_ENV !== 'production' || process.env.DEMO_MODE !== 'true' });
 const { authOrigin, getAuth } = await import('../src/lib/auth');
 await check('auth.origin', () => { const origin=authOrigin(); if (process.env.APP_URL && new URL(process.env.APP_URL).origin !== origin) throw new Error(); });

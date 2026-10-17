@@ -105,7 +105,7 @@ Domain tests exercise real libSQL files, success and rejection telemetry, unexpe
 
 ## Demo and extension boundaries
 
-`seedDemo(db, actor, variant)` in `src/db/seed.ts` is an explicit nonproduction operation. It inserts six products by missing SKU and never overwrites price or stock. Ecommerce uses NOMA sample products in USD; POS uses sample retail/grocery products in PYG. Sample image URLs reference external Unsplash imagery; replace with owned customer assets before launch.
+`seedDemo(db, actor, variant, { locale, currency })` in `src/db/seed.ts` is an explicit nonproduction operation. It inserts the sample catalog of `src/db/demo-catalog.ts` by missing SKU (six NOMA products for ecommerce, ten retail/grocery products for POS) and never overwrites price or stock. Names are available in English and Spanish (other languages fall back to English) and prices are converted to the configured currency's minor units, USD by default. The ecommerce sample image URLs reference external Unsplash imagery; replace with owned customer assets before launch. The POS sample has no images.
 
 Not implemented in this foundation: online payment capture, tax rules/invoicing, shipping quotes/labels, refunds, multi-location inventory, purchase orders, variants, offline sync, hardware fiscal printers, and automatic reservation expiry. Those require separate modules and acceptance tests. Database provider configuration is prepared; a live Supabase/Neon/Turso credentialed deployment has not been verified by these local tests.
 

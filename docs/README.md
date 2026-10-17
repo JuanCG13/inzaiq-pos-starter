@@ -2,13 +2,15 @@
 
 [English overview](../README.md) · [Resumen en español](../README.es.md) · [Latest changes](../CHANGELOG.md)
 
-The top-level READMEs are equivalent English and Spanish introductions. The technical guides below have **not** all been translated; each link lists its current language.
+The top-level READMEs and changelogs are equivalent English and Spanish documents. The technical guides below have **not** all been translated; each link lists its current language. The application interface itself is available in English and Spanish ([guide](i18n.md)).
 
-Los README principales son introducciones equivalentes en inglés y español. Las guías técnicas **no** están traducidas íntegramente; cada enlace indica su idioma actual.
+Los README principales y los historiales de cambios son documentos equivalentes en inglés y español. Las guías técnicas **no** están traducidas íntegramente; cada enlace indica su idioma actual. La interfaz de la aplicación está disponible en inglés y español ([guía](i18n.md)).
 
 | Guide | Language | Covers |
 | --- | --- | --- |
 | [Assembly](assembly.md) | English | Configure and verify a customer installation |
+| [Languages and currency](i18n.md) | English | Interface languages, default currency (USD), regional formats and how to add a language |
+| [Screens](screenshots/README.md) | English | Every screen of the reference interface and how the screenshots are captured |
 | [Architecture](architecture.md) | English | Layers, shared domain rules and design decisions |
 | [Database](database.md) | English | Providers, pools, migrations, tenant isolation and transaction invariants |
 | [MCP](mcp.md) | Español | OAuth, tools, permissions, consent and revocation |

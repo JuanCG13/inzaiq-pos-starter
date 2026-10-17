@@ -26,7 +26,7 @@ We assemble established identity, protocol, SQL, validation and tracing packages
 
 - Tenant context is derived from verified session membership or verified OAuth claims plus current membership/consent. A tenant header or model argument never grants access.
 - Scope and role are intersected on every operation. Viewing data does not confer mutation privileges.
-- Money is integer minor units; PYG uses zero decimal digits, USD uses two. Never multiply all currencies by 100. Different currencies cannot be combined in one sale.
+- Money is integer minor units; PYG uses zero decimal digits, USD (the default currency) uses two. Never multiply all currencies by 100. Different currencies cannot be combined in one sale.
 - Product price and currency are read from the server at commit. HTTP checkout and MCP order creation require `expectedTotalMinor` and `expectedCurrency` to bind confirmation to both amount and currency; stale values roll back the transaction. These assertions never set the server price.
 - Order, lines, stock changes and audit commit together. If audit persistence fails, the business transaction fails too. Diagnostic export failures do not affect the business result.
 - Idempotency keys survive restarts and are bound to normalized request content. The order hash includes the expected total and expected currency, as well as items, channel, payment method and customer. Reusing a key with changed content is rejected.
@@ -37,13 +37,17 @@ We assemble established identity, protocol, SQL, validation and tracing packages
 
 ## Boundaries and extension points
 
-See `template.manifest.json`. `src/template.config.ts` owns branding, locale, currency and feature flags. `npm run configure -- --name "Client" --currency PYG --locale es-PY` updates branding without modifying existing amounts. Extend modules by adding a domain method with tests, then expose a schema-validated HTTP route and a scoped MCP tool. The transport must not contain business rules.
+See `template.manifest.json`. `src/template.config.ts` owns branding, languages, currency, regional format and feature flags. `npm run configure -- --name "Client" --default-locale es --locale es-PY --currency PYG` updates them without modifying existing amounts. Extend modules by adding a domain method with tests, then expose a schema-validated HTTP route and a scoped MCP tool. The transport must not contain business rules.
 
 Payments, shipping carriers, fiscal invoices, returns/refunds, discounts, weighted/fractional stock, multi-warehouse transfers and offline synchronization are additional modules. Each size/color variant can initially be a distinct SKU. Do not silently fake these capabilities. POS records cash sales; ecommerce records orders for manual payment coordination. No card is charged.
 
+## Localization
+
+The interface text lives in typed dictionaries (`src/i18n/messages`), English being the source of truth, and is chosen per request from a language cookie, then `Accept-Language`, then the installation default; routes are not prefixed so the OAuth/MCP paths stay stable. Services, HTTP responses, MCP tools and logs stay in English and expose stable error codes that the interface translates. Money rules (integer minor units, server-side prices, per-product currency) do not depend on the language. See [languages and currency](i18n.md).
+
 ## Design
 
-Clear hierarchy, generous whitespace, a restrained accent, familiar controls and progressive disclosure are inspired by Apple HIG. Chris Do's clarity/typographic hierarchy and COLLINS' coherent visual systems inform the communication. This is not an Apple clone; no proprietary fonts or Apple assets are bundled. Monetary totals use tabular numerals, focus is visible, dialogs support keyboard interaction and motion respects reduced-motion preferences. Demo photos are external Unsplash samples, replace them with licensed customer assets for delivery.
+Clear hierarchy, generous whitespace, a restrained accent, familiar controls and progressive disclosure are inspired by Apple HIG. Chris Do's clarity/typographic hierarchy and COLLINS' coherent visual systems inform the communication. This is not an Apple clone; no proprietary fonts or Apple assets are bundled. Monetary totals use tabular numerals, focus is visible, dialogs support keyboard interaction and motion respects reduced-motion preferences. The point-of-sale demo uses no photographs; the ecommerce demo references external Unsplash samples, replace them with licensed customer assets for delivery.
 
 ## Read before extending
 
